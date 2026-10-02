@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pengelolaan & Arsip SPM - SD Islam Al Hijrah</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- XLSX-POPULATE & FileSaver -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx-populate/1.21.0/xlsx-populate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-emerald: #047857;
+            --emerald-hover: #065f46;
+            --bg-light: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-main: #1e293b;
+        }
+        body {
+            background-color: var(--bg-light);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text-main);
+            padding: 1.5rem 0.5rem;
+        }
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .card-formal {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-emerald);
+            border-bottom: 2px solid #e6f4ed;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-control, .form-select {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 0.6rem 0.75rem;
+            font-size: 0.925rem;
+            background-color: #fff;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-emerald);
+            box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.15);
+        }
+        .form-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #475569;
+            margin-bottom: 0.35rem;
+        }
+        .btn-primary-custom {
+            background-color: var(--primary-emerald);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .btn-primary-custom:hover {
+            background-color: var(--emerald-hover);
+            color: white;
+        }
+        .btn-outline-custom {
+            border: 1px solid var(--primary-emerald);
+            color: var(--primary-emerald);
+            border-radius: 8px;
+            background: transparent;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .btn-outline-custom:hover {
+            background: var(--primary-emerald);
+            color: white;
+        }
+        .item-row {
+            background: #fdfefe;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .total-box {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+        .app-logo {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            padding: 4px;
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--primary-emerald);
+            font-weight: bold;
+            border-bottom: 3px solid var(--primary-emerald);
+            background: transparent;
+        }
+        .nav-tabs .nav-link {
+            color: #64748b;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    
+    <!-- Header Instansi -->
+    <div class="card-formal d-flex align-items-center justify-content-between flex-wrap gap-3 py-3 mb-3">
+        <div class="d-flex align-items-center gap-3">
+            <img id="appLogoDisplay" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' fill='%23047857' viewBox='0 0 16 16'%3E%3Cpath d='M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z'/%3E%3C/svg%3E" alt="Logo" class="app-logo">
+            <div>
+                <h5 class="fw-bold mb-1" style="color: var(--primary-emerald);">SD ISLAM AL HIJRAH GORONTALO</h5>
+                <p class="text-muted small mb-0">Sistem Informasi Pengelolaan Keuangan & Arsip SPM</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigasi Menu (Form Pengajuan vs Arsip Bendahara) -->
+    <ul class="nav nav-tabs mb-3 px-2" id="appTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#formPane" type="button" role="tab">📝 Form Pengajuan (Pegawai)</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="archive-tab" data-bs-toggle="tab" data-bs-target="#archivePane" type="button" role="tab" onclick="muatArsip()">📥 Arsip & Cetak SPM (Bendahara)</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="appTabContent">
+        
+        <!-- PANE 1: FORM PENGAJUAN PEGAWAI -->
+        <div class="tab-pane fade show active" id="formPane" role="tabpanel">
+            <div class="card-formal">
+                <div class="section-title">Formulir Pengajuan SPM</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Nomor SPM</label>
+                        <input type="text" id="noSpm" class="form-control" placeholder="Contoh: 045/SPM/SD-AH/X/2026">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tanggal SPM</label>
+                        <input type="date" id="tanggal" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Diminta Oleh (Nama Pemohon)</label>
+                        <input type="text" id="dimintaOleh" class="form-control" placeholder="Nama Anda / Pemegang Kegiatan">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Sumber Dana</label>
+                        <select id="sumberDana" class="form-select">
+                            <option value="Kas Sekolah">Kas Sekolah</option>
+                            <option value="Kas BOS">Kas BOS</option>
+                            <option value="Kas DOS">Kas DOS</option>
+                            <option value="Kas Bop">Kas Bop</option>
+                            <option value="Kas Yayasan">Kas Yayasan</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nama Akun</label>
+                        <input type="text" id="namaAkun" class="form-control" placeholder="Contoh: Belanja Operasional">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Untuk Keperluan</label>
+                        <input type="text" id="keperluan" class="form-control" placeholder="Uraian peruntukan dana...">
+                    </div>
+                </div>
+
+                <div class="section-title d-flex justify-content-between align-items-center">
+                    <span>Rincian Anggaran / Keperluan</span>
+                    <button class="btn btn-outline-custom btn-sm px-3 py-1" onclick="tambahBaris()">+ Tambah Baris</button>
+                </div>
+
+                <div id="itemContainer" class="mb-4">
+                    <div class="item-row">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-secondary item-badge">Item #1</span>
+                            <button type="button" class="btn-close btn-close-sm remove-btn d-none" aria-label="Hapus" onclick="hapusBaris(this)"></button>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Keterangan / Uraian</label>
+                            <input type="text" class="form-control ket" placeholder="Nama barang atau jasa...">
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <label class="form-label">Satuan (Qty)</label>
+                                <input type="number" class="form-control qty" oninput="hitungTotal()" value="1" min="1">
+                            </div>
+                            <div class="col-8">
+                                <label class="form-label">Harga Satuan (Rp)</label>
+                                <input type="number" class="form-control harga" oninput="hitungTotal()" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="mt-2 text-end text-muted small">
+                            Subtotal: <strong class="text-dark sub-jumlah">Rp 0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mb-4">
+                    <div class="total-box w-100 text-center d-flex justify-content-between align-items-center">
+                        <span class="text-secondary small text-uppercase fw-bold">Total Pengajuan:</span>
+                        <span id="labelTotal" style="color: var(--primary-emerald);">Rp 0</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary-custom w-100 py-3 shadow-sm" onclick="simpanPengajuan()">
+                    Kirim Pengajuan ke Bendahara
+                </button>
+            </div>
+        </div>
+
+        <!-- PANE 2: ARSIP & CETAK BENDAHARA -->
+        <div class="tab-pane fade" id="archivePane" role="tabpanel">
+            <div class="card-formal">
+                <div class="section-title d-flex justify-content-between align-items-center">
+                    <span>Daftar Pengajuan Masuk (Arsip Bendahara)</span>
+                    <button class="btn btn-outline-custom btn-sm" onclick="muatArsip()">Muat Ulang</button>
+                </div>
+                
+                <div class="mb-3 p-3 border rounded-3 bg-light">
+                    <label class="form-label fw-bold text-success">Upload File Template Master Excel (Format SPM_2.xlsx)</label>
+                    <input type="file" id="templateFile" class="form-control" accept=".xlsx">
+                    <small class="text-muted">Diperlukan sekali untuk mencetak data di arsip ke format resmi Excel.</small>
+                </div>
+
+                <div id="arsipContainer">
+                    <!-- Daftar arsip akan dimuat secara dinamis disini -->
+                    <p class="text-muted text-center py-4">Belum ada pengajuan SPM masuk.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let formatRupiah = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 });
+
+    function terbilang(angka) {
+        const huruf = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+        let hasil = "";
+        if (angka < 12) hasil = huruf[angka];
+        else if (angka < 20) hasil = terbilang(angka - 10) + " Belas";
+        else if (angka < 100) hasil = terbilang(Math.floor(angka / 10)) + " Puluh " + terbilang(angka % 10);
+        else if (angka < 200) hasil = "Seratus " + terbilang(angka - 100);
+        else if (angka < 1000) hasil = terbilang(Math.floor(angka / 100)) + " Ratus " + terbilang(angka % 100);
+        else if (angka < 2000) hasil = "Seribu " + terbilang(angka - 1000);
+        else if (angka < 1000000) hasil = terbilang(Math.floor(angka / 1000)) + " Ribu " + terbilang(angka % 1000);
+        else if (angka < 1000000000) hasil = terbilang(Math.floor(angka / 1000000)) + " Juta " + terbilang(angka % 1000000);
+        return hasil.trim();
+    }
+
+    function formatTanggal(tgl) {
+        if(!tgl) return "";
+        const [y, m, d] = tgl.split("-");
+        const bulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        return `${d} ${bulan[parseInt(m)]} ${y}`;
+    }
+
+    function tambahBaris() {
+        const container = document.getElementById('itemContainer');
+        const rowCount = container.children.length;
+        if (rowCount >= 18) {
+            alert("Maksimal rincian pada template SPM ini adalah 18 baris.");
+            return;
+        }
+        
+        const div = document.createElement('div');
+        div.className = 'item-row';
+        div.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-secondary item-badge">Item #${rowCount + 1}</span>
+                <button type="button" class="btn-close btn-close-sm remove-btn" aria-label="Hapus" onclick="hapusBaris(this)"></button>
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Keterangan / Uraian</label>
+                <input type="text" class="form-control ket" placeholder="Nama barang atau jasa...">
+            </div>
+            <div class="row g-2">
+                <div class="col-4">
+                    <label class="form-label">Satuan (Qty)</label>
+                    <input type="number" class="form-control qty" oninput="hitungTotal()" value="1" min="1">
+                </div>
+                <div class="col-8">
+                    <label class="form-label">Harga Satuan (Rp)</label>
+                    <input type="number" class="form-control harga" oninput="hitungTotal()" value="0" placeholder="0">
+                </div>
+            </div>
+            <div class="mt-2 text-end text-muted small">
+                Subtotal: <strong class="text-dark sub-jumlah">Rp 0</strong>
+            </div>
+        `;
+        container.appendChild(div);
+        perbaruiNomorItem();
+    }
+
+    function hapusBaris(btn) {
+        const container = document.getElementById('itemContainer');
+        if (container.children.length <= 1) {
+            alert("Minimal harus ada 1 rincian item.");
+            return;
+        }
+        btn.closest('.item-row').remove();
+        perbaruiNomorItem();
+        hitungTotal();
+    }
+
+    function perbaruiNomorItem() {
+        const rows = document.querySelectorAll('.item-row');
+        rows.forEach((row, idx) => {
+            row.querySelector('.item-badge').innerText = `Item #${idx + 1}`;
+            const closeBtn = row.querySelector('.remove-btn');
+            if (rows.length === 1) {
+                closeBtn.classList.add('d-none');
+            } else {
+                closeBtn.classList.remove('d-none');
+            }
+        });
+    }
+
+    function hitungTotal() {
+        let total = 0;
+        const rows = document.querySelectorAll('.item-row');
+        rows.forEach(row => {
+            const qty = parseFloat(row.querySelector('.qty').value) || 0;
+            const harga = parseFloat(row.querySelector('.harga').value) || 0;
+            const jumlah = qty * harga; 
+            
+            row.querySelector('.sub-jumlah').innerText = formatRupiah.format(jumlah);
+            row.dataset.val = jumlah; 
+            
+            total += jumlah;
+        });
+        document.getElementById('labelTotal').innerText = formatRupiah.format(total);
+        return total;
+    }
+
+    // SIMPAN PENGAJUAN KE LOCAL STORAGE
+    function simpanPengajuan() {
+        const noSpm = document.getElementById('noSpm').value.trim();
+        const tanggal = document.getElementById('tanggal').value;
+        const dimintaOleh = document.getElementById('dimintaOleh').value.trim();
+        const sumberDana = document.getElementById('sumberDana').value;
+        const namaAkun = document.getElementById('namaAkun').value.trim();
+        const keperluan = document.getElementById('keperluan').value.trim();
+
+        if(!noSpm || !tanggal || !dimintaOleh || !namaAkun || !keperluan) {
+            alert("Harap lengkapi semua data formulir pengajuan terlebih dahulu!");
+            return;
+        }
+
+        let items = [];
+        const rows = document.querySelectorAll('.item-row');
+        rows.forEach(row => {
+            items.push({
+                ket: row.querySelector('.ket').value,
+                qty: parseFloat(row.querySelector('.qty').value) || 0,
+                harga: parseFloat(row.querySelector('.harga').value) || 0,
+                jumlah: parseFloat(row.dataset.val) || 0
+            });
+        });
+
+        const totalUang = hitungTotal();
+
+        const pengajuanBaru = {
+            id: Date.now(),
+            noSpm,
+            tanggal,
+            dimintaOleh,
+            sumberDana,
+            namaAkun,
+            keperluan,
+            items,
+            totalUang,
+            waktuKirim: new Date().toLocaleString('id-ID')
+        };
+
+        let arsip = JSON.parse(localStorage.getItem('arsip_spm') || '[]');
+        arsip.unshift(pengajuanBaru);
+        localStorage.setItem('arsip_spm', JSON.stringify(arsip));
+
+        alert("Berhasil! Pengajuan SPM telah dikirim dan tersimpan di sistem Bendahara.");
+        
+        // Reset Form
+        document.getElementById('noSpm').value = '';
+        document.getElementById('dimintaOleh').value = '';
+        document.getElementById('namaAkun').value = '';
+        document.getElementById('keperluan').value = '';
+        hitungTotal();
+    }
+
+    // MUAT ARSIP UNTUK BENDAHARA
+    function muatArsip() {
+        const container = document.getElementById('arsipContainer');
+        const arsip = JSON.parse(localStorage.getItem('arsip_spm') || '[]');
+
+        if(arsip.length === 0) {
+            container.innerHTML = `<p class="text-muted text-center py-4">Belum ada pengajuan SPM masuk.</p>`;
+            return;
+        }
+
+        let html = '';
+        arsip.forEach((data, index) => {
+            html += `
+                <div class="border rounded-3 p-3 mb-3 bg-white shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                        <div>
+                            <span class="badge bg-success mb-1">${data.sumberDana}</span>
+                            <h6 class="fw-bold mb-0 text-dark">No. SPM: ${data.noSpm}</h6>
+                        </div>
+                        <span class="text-muted small">Dikirim: ${data.waktuKirim}</span>
+                    </div>
+                    <div class="small text-secondary mb-2">
+                        <b>Pemohon:</b> ${data.dimintaOleh} | <b>Akun:</b> ${data.namaAkun} | <b>Total:</b> ${formatRupiah.format(data.totalUang)}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary-custom btn-sm py-1 px-3" onclick='cetakExcel(${JSON.stringify(data)})'>📥 Cetak Excel Resmi</button>
+                        <button class="btn btn-outline-danger btn-sm py-1 px-2" onclick="hapusArsip(${data.id})">Hapus</button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    // HAPUS ARSIP
+    function hapusArsip(id) {
+        if(confirm("Yakin ingin menghapus arsip pengajuan ini?")) {
+            let arsip = JSON.parse(localStorage.getItem('arsip_spm') || '[]');
+            arsip = arsip.filter(item => item.id !== id);
+            localStorage.setItem('arsip_spm', JSON.stringify(arsip));
+            muatArsip();
+        }
+    }
+
+    // CETAK / DOWNLOAD EXCEL DARI ARSIP
+    function cetakExcel(data) {
+        const fileInput = document.getElementById('templateFile');
+        if (fileInput.files.length === 0) {
+            alert("Bendahara wajib meng-upload file template 'Format SPM_2.xlsx' terlebih dahulu di atas!");
+            return;
+        }
+
+        const templateFile = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const buffer = e.target.result;
+            
+            XlsxPopulate.fromDataAsync(buffer).then(workbook => {
+                const ws = workbook.sheet(0);
+                const formatUang = '"Rp. "#,##0';
+
+                const tanggalFormatted = formatTanggal(data.tanggal);
+
+                if(data.noSpm) ws.cell('I3').value(": " + data.noSpm);
+                if(tanggalFormatted) ws.cell('I5').value(": " + tanggalFormatted);
+                
+                ws.cell('E6').value(data.totalUang).style("numberFormat", formatUang); 
+                ws.cell('E7').value(terbilang(data.totalUang) + " Rupiah");
+                
+                if(data.dimintaOleh) {
+                    ws.cell('I10').value("( " + data.dimintaOleh + " )")
+                      .style("bold", true)
+                      .style("horizontalAlignment", "center")
+                      .style("verticalAlignment", "center");
+                }
+
+                ws.cell('D9').value(": " + data.sumberDana);
+                ws.cell('E10').value(": " + data.namaAkun);
+                ws.cell('E11').value(": " + data.keperluan);
+
+                let startRow = 13; 
+                data.items.forEach((item, idx) => {
+                    if (item.ket || item.harga > 0) {
+                        ws.cell(`A${startRow + idx}`).value(idx + 1); 
+                        ws.cell(`B${startRow + idx}`).value(item.ket);     
+                        ws.cell(`G${startRow + idx}`).value(item.qty);
+                        ws.cell(`H${startRow + idx}`).value(item.harga).style("numberFormat", formatUang);   
+                        ws.cell(`I${startRow + idx}`).value(item.jumlah).style("numberFormat", formatUang);  
+                    }
+                });
+
+                ws.cell('I31').value(data.totalUang).style("numberFormat", formatUang);
+
+                if(data.noSpm) ws.cell('I40').value(": " + data.noSpm);
+                ws.cell('E42').value(data.totalUang).style("numberFormat", formatUang);
+
+                return workbook.outputAsync();
+            }).then(out => {
+                const blob = out instanceof Blob ? out : new Blob([out], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+                const fileName = "SPM_" + (data.noSpm.replace(/\//g, "-") || "Arsip") + ".xlsx";
+                saveAs(blob, fileName);
+            }).catch(err => {
+                console.error(err);
+                alert("Terjadi kesalahan saat memproses file Excel.");
+            });
+        };
+
+        reader.readAsArrayBuffer(templateFile);
+    }
+</script>
+</body>
+</html>
